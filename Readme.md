@@ -35,6 +35,9 @@ This will configure the docker swarm aws infrastructure via terraform and plan /
 Enjoy your fresh docker swarm cluster :) 
 
 
+### Check out the Azure version: https://github.com/makevoid/azure-terraform-swarm-template
+
+
 ### Open Source
 
 Feel free to open an issue to see if this worked for you or not, if you think you can contribute, open a pull request with your desired improvement.
