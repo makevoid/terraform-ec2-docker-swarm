@@ -1,0 +1,7 @@
+.terraform
+*.tfstate*
+.rake_tasks*
+crash.log
+output_*.txt
+plan.json
+stacks
