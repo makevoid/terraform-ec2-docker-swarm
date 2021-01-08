@@ -1,7 +1,7 @@
 
 # azure-terraform-swarm-template
 
-#### Docker Swarm terraform configuration on azure
+#### Docker Swarm terraform configuration on AWS
 
 Main Targets:
 - highly available environment
