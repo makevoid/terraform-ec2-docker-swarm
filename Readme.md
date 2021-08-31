@@ -4,7 +4,7 @@
 #### Docker Swarm terraform configuration on AWS
 
 Main Targets:
-- highly available environment
+- highly available environment 
 - docker swarm based
 
 Docker Swarm is an easy step from Compose and it's a good hosted cluster solution as Kubernetes becomes easier and easier to configure, use, more containerd tooling etc. and you're ready to transition to it.
@@ -15,6 +15,7 @@ This repo is a terraform definition which should be a good start as it's focused
 
 Feedback is welcome, feel free to open an issue.
 
+(note: set up an extra vM for swarm master quorum for the standard swarm production configuration)
 
 #### Configure
 
