@@ -42,3 +42,7 @@ Enjoy your fresh docker swarm cluster :)
 ### Open Source
 
 Feel free to open an issue to see if this worked for you or not, if you think you can contribute, open a pull request with your desired improvement.
+
+Have fun!
+
+[@makevoid](https://twitter.com/makevoid)
