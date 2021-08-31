@@ -30,7 +30,7 @@ variable "region" {
 
 variable "ami_base_vm_debian_10" {
   type    = string
-  default = "ami-00b951edb5915f3a8" # see AWS marketplace - https://aws.amazon.com/marketplace/search/results?searchTerms=ami-00b951edb5915f3a8
+  default = "ami-04e905a52ec8010b2" # see AWS marketplace - https://aws.amazon.com/marketplace/search/results?searchTerms=ami-00b951edb5915f3a8
 }
 
 variable "compute_ec2_vm_size" {
