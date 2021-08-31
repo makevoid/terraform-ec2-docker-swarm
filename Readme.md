@@ -1,7 +1,7 @@
 
 # terraform-ec2-docker-swarm
 
-#### Docker Swarm terraform configuration on AWS
+#### Docker Swarm EC2 cluster Terraform configuration on AWS
 
 Main Targets:
 - highly available environment 
