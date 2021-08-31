@@ -1,5 +1,5 @@
 
-# azure-terraform-swarm-template
+# aws-terraform-swarm-template
 
 #### Docker Swarm terraform configuration on AWS
 
