@@ -9,16 +9,6 @@ def execute_tf
   exe "cd #{stack_dir} && terraform plan -out plan.json . && terraform apply -auto-approve plan.json"
 end
 
-SSH_CONFIG_LOCAL_PATH = File.expand_path "~/.ssh/config"
-
-def update_ssh_config
-  ssh_config_orig = File.read SSH_CONFIG_LOCAL_PATH
-  ssh_config = ssh_config_parse ssh_config_local: ssh_config_orig
-  # p ssh_config if DEBUG
-  File.open("#{SSH_CONFIG_LOCAL_PATH}.bak", "w")  { |f| f.write ssh_config_orig }
-  File.open(SSH_CONFIG_LOCAL_PATH, "w")           { |f| f.write ssh_config      }
-end
-
 def ssh_config_parse(ssh_config_local:)
   split = ssh_config_local.split /--\(sd\)---/
   split_2 = "\n\n#{split[2]}" if split[2] && split[2] != "" && split[2] != "\n"
@@ -26,45 +16,6 @@ def ssh_config_parse(ssh_config_local:)
   "#{ssh_host_config}#{ssh_config_new}"
 end
 
-def ssh_config_new
-  "# ---(sd)---
-# ENV-02 - Docker Swarm Terraform cluster
-
-Host #{STACK_NAME}-bas.sdata.run
-  User azureuser
-  IdentityFile ~/.ssh/id_env_deployer1
-
-Host #{IP_VM_A}
-  User azureuser
-  ProxyCommand ssh -W %h:%p #{STACK_NAME}-bas.sdata.run
-  IdentityFile ~/.ssh/id_env_azure_bas
-
-Host #{IP_VM_B}
-  User azureuser
-  ProxyCommand ssh -W %h:%p #{STACK_NAME}-bas.sdata.run
-  IdentityFile ~/.ssh/id_env_azure_bas
-
-# ---(sd)---
-"
-end
-
-def ssh_config_deployer
-  "
-# ENV-02 - Docker Swarm Terraform cluster
-Host #{STACK_NAME}-bas.sdata.run
-  User azureuser
-
-Host #{IP_VM_A}
-  User azureuser
-  ProxyCommand ssh -W %h:%p #{STACK_NAME}-bas.sdata.run
-  IdentityFile ~/.ssh/id_env_azure_bas
-
-Host #{IP_VM_B}
-  User azureuser
-  ProxyCommand ssh -W %h:%p #{STACK_NAME}-bas.sdata.run
-  IdentityFile ~/.ssh/id_env_azure_bas
-"
-end
 
 def clone_provisioner
   exe "cd #{PATH}/vendor && git clone #{PROVISIONER_GIT_URI}"
@@ -132,45 +83,8 @@ def prereqs_check
   prereqs_check_tf_config
 end
 
-def deployer_setup_ssh
-  deployer = "root@#{DEPLOYER_HOST}"
-  bastion = "#{STACK_NAME}-bas.sdata.run"
-
-  File.open("#{PATH}/tmp/deployer-ssh-config.txt", "w") { |f| f.write ssh_config_deployer }
-  exe "scp #{PATH}/tmp/deployer-ssh-config.txt #{deployer}:.ssh/config"
-
-  # clear existing known hosts
-  exe %Q(ssh #{deployer} "ssh-keygen -R \\"#{bastion}\\"")
-  exe %Q(ssh #{deployer} "ssh-keygen -R \\"#{IP_VM_A}\\"")
-  exe %Q(ssh #{deployer} "ssh-keygen -R \\"#{IP_VM_B}\\"")
-
-  # add new key fingerprints to known hosts
-  exe %Q(ssh #{deployer} "ssh-keyscan -H #{bastion} >> ~/.ssh/known_hosts")
-  exe %Q(ssh #{deployer} "ssh #{bastion} \\"ssh-keyscan -H #{IP_VM_A}\\" >> ~/.ssh/known_hosts")
-  exe %Q(ssh #{deployer} "ssh #{bastion} \\"ssh-keyscan -H #{IP_VM_B}\\" >> ~/.ssh/known_hosts")
-end
-
 def deployer_setup_secrets
   exe "scp #{PATH}/config/secrets/deployer-env.sh root@#{IP_VM_A}:deployer-env.sh"
-end
-
-def dns_setup_bastion
-  bastion_ip = File.read "#{stack_dir}/output_bastion_ip.txt"
-  bastion_domain = "#{STACK_NAME}-bas"
-  exe "cd #{PATH}/dns && SUBDOMAIN=#{bastion_domain} IP=#{bastion_ip} rake"
-end
-
-def dns_setup_app_gateway
-  app_gateway_ip = File.read "#{stack_dir}/output_app_gateway_ip.txt"
-  app_gateway_domain = STACK_NAME
-  exe "cd #{PATH}/dns && SUBDOMAIN=#{app_gateway_domain} IP=#{app_gateway_ip} rake"
-end
-
-def dns_setup
-  dns_setup_bastion
-  dns_setup_app_gateway
-  puts "waiting for the DNS to be propagated... (90s)"
-  sleep 90
 end
 
 def main
@@ -186,49 +100,6 @@ def main
   puts "Terraform"
   write_stack_files
   execute_tf
-
-  exit
-
-  puts "DNS"
-  dns_setup
-
-  puts "Provisioning"
-  clone_provisioner # todo move to prepare
-  update_ssh_config
-
-  print_ssh_check_instructions
-  gets
-
-  ssh_check
-  provisioner_configure_vms
-
-  puts "Deployer config"
-  domain = "#{STACK_NAME}.sdata.run"
-  deployer_config_update domain: domain, stack_name: STACK_NAME
-
-  puts "DB"
-  provision_database
-
-  puts "Setup Deployer SSH"
-  deployer_setup_ssh
-  deployer_setup_secrets
 end
-
-# TODO
-
-# add load balancer
-# - run terraformer
-# - customize and integrate plan
-# - run dnsimple to connect to ip / cname
-# run healthchecks (unit test)
-# add database
-# clone and add sgx vms
-# documentation - github markdown
-# profit!
-
-# ---
-
-# ssh- add hosts - take from provisioner
-# run an ssh command to validate
 
 main
