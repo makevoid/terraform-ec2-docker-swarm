@@ -23,11 +23,6 @@ def clone_provisioner
   exe "cd #{PATH}/vendor/provisioner && #{pull}"
 end
 
-def ssh_check
-  puts "if this command hangs it means your setup is "
-  exe "ssh #{IP_VM_A} uptime"
-end
-
 def provisioner_configure_vms
   ips = "IP_A=#{IP_VM_A} IP_B=#{IP_VM_B}"
   exe "cd #{PATH}/vendor/provisioner/vm && CLI_RUN=1 #{ips} rake"
@@ -35,22 +30,6 @@ end
 
 def provision_database
   exe "STACK_ID=#{STACK_ID} rake psql:create"
-end
-
-def print_ssh_check_instructions
-  # TODO: automate as we automated it for the bastion host
-  puts "
-  # execute these commands once to register the current VMs ssh keys
-  ssh-keygen -f \"$HOME/.ssh/known_hosts\" -R \"#{STACK_NAME}-bas.sdata.run\"
-  ssh-keygen -f \"$HOME/.ssh/known_hosts\" -R \"#{IP_VM_A}\"
-  ssh-keygen -f \"$HOME/.ssh/known_hosts\" -R \"#{IP_VM_B}\"
-
-  # execute these two individually on another terminal, add the host key and exit (press Ctrl-C there) for both
-  ssh #{IP_VM_A}
-  ssh #{IP_VM_B}
-
-  # press Enter to proceed
-  "
 end
 
 def prereqs_check_jq_installed
