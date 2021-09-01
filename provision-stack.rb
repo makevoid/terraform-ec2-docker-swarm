@@ -6,7 +6,14 @@ end
 
 def execute_tf
   puts system "cd #{stack_dir} && terraform init"
-  exe "cd #{stack_dir} && terraform plan -out plan.json . && terraform apply -auto-approve plan.json"
+  ok = exe_r "cd #{stack_dir} && terraform plan -out plan.json"
+  unless ok
+    puts "Provisioning errored, exiting..."
+    exit
+  end
+  puts "\Terraform plan succeeded, press Enter to continue or Ctrl-C to exit"
+  gets
+  exe "cd #{stack_dir} && terraform apply -auto-approve plan.json"
 end
 
 def ssh_config_parse(ssh_config_local:)
